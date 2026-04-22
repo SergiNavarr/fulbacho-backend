@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 using Fulbacho.Application.Modules.B2C.DTOs;
 
-namespace Fulbacho.Application.Modules.B2C.Services
+namespace Fulbacho.Application.Modules.B2C.Interfaces
 {
     public interface IEquipoService
     {

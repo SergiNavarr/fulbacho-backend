@@ -8,6 +8,7 @@ using Fulbacho.Application.Modules.B2C.DTOs;
 using Fulbacho.Shared;
 using Fulbacho.Shared.Entities;
 using Microsoft.EntityFrameworkCore;
+using Fulbacho.Application.Modules.B2C.Interfaces;
 
 namespace Fulbacho.Application.Modules.B2C.Services
 {

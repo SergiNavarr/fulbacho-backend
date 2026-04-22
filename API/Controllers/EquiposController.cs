@@ -1,5 +1,6 @@
 ﻿using Fulbacho.Application.Modules.B2C.DTOs;
 using Fulbacho.Application.Modules.B2C.Services;
+using Fulbacho.Application.Modules.B2C.Interfaces;
 using Microsoft.AspNetCore.Mvc;
 
 namespace Fulbacho.API.Controllers
