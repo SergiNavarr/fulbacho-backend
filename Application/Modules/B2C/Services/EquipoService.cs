@@ -45,7 +45,7 @@ namespace Fulbacho.Application.Modules.B2C.Services
         }
         public async Task<Equipo?> ObtenerEquipoPorIdAsync(int idEquipo, int idCapitan)
         {
-            // Usamos Include para traer también los datos del nivel si el frontend los necesita
+            // Usamos Include para traer también los datos del nivel
             return await _context.Equipos
                 .Include(e => e.Nivel)
                 .FirstOrDefaultAsync(e => e.Id == idEquipo && e.IdCapitan == idCapitan && e.EsActivo);
@@ -53,24 +53,24 @@ namespace Fulbacho.Application.Modules.B2C.Services
 
         public async Task<bool> ActualizarEquipoAsync(int idEquipo, ActualizarEquipoDto dto, int idCapitan)
         {
-            // 1. Buscamos el equipo y verificamos que le pertenezca a este capitán
+            // Buscamos el equipo y verificamos que le pertenezca a este capitán
             var equipo = await _context.Equipos
                 .FirstOrDefaultAsync(e => e.Id == idEquipo && e.IdCapitan == idCapitan && e.EsActivo);
 
             if (equipo == null)
                 throw new Exception("Equipo no encontrado o no tenés permisos para editarlo.");
 
-            // 2. Verificamos que el nuevo nivel exista
+            // Verificamos que el nuevo nivel exista
             bool nivelExiste = await _context.NivelesCompetitivos.AnyAsync(n => n.Id == dto.IdNivel);
             if (!nivelExiste)
                 throw new Exception("El nivel competitivo seleccionado no es válido.");
 
-            // 3. Actualizamos las propiedades
+            // Actualizamos las propiedades
             equipo.Nombre = dto.Nombre;
             equipo.EscudoUrl = dto.EscudoUrl;
             equipo.IdNivel = dto.IdNivel;
 
-            // 4. Guardamos los cambios
+            // Guardamos los cambios
             await _context.SaveChangesAsync();
             return true;
         }
