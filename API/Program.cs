@@ -10,14 +10,15 @@ builder.Services.AddDbContext<FulbachoDbContext>(options =>
     options.UseNpgsql(builder.Configuration.GetConnectionString("DefaultConnection")));
 
 builder.Services.AddScoped<IEquipoService, EquipoService>();
+builder.Services.AddScoped<IPredioService, IPredioService>();
 
 builder.Services.AddCors(options =>
 {
     options.AddPolicy("PermitirFrontendNext", policy =>
     {
-        policy.WithOrigins("http://localhost:3000") // El puerto por defecto de Next.js
-              .AllowAnyHeader()                     // Permite mandar JSON, Tokens, etc.
-              .AllowAnyMethod();                    // Permite POST, GET, PUT, DELETE
+        policy.WithOrigins("http://localhost:3000") 
+              .AllowAnyHeader()                     
+              .AllowAnyMethod();                    
     });
 });
 

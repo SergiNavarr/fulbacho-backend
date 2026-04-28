@@ -4,22 +4,33 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
+using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
+using Microsoft.EntityFrameworkCore;
 
 namespace Fulbacho.Shared.Entities
 {
-    [Table("Jugadores_Equipos")]
+    [Table("Jugadores_equipos")]
+    [PrimaryKey(nameof(IdEquipo), nameof(IdJugador))]
     public class JugadorEquipo
     {
-        public int IdUsuario { get; set; }
-        [ForeignKey(nameof(IdUsuario))]
-        public Usuario Jugador { get; set; } = null!;
-
+        // Clave Foránea 1
         public int IdEquipo { get; set; }
-        [ForeignKey(nameof(IdEquipo))]
-        public Equipo Equipo { get; set; } = null!;
 
-        public DateTime FechaUnion { get; set; } = DateTime.UtcNow;
-        public bool EsActivo { get; set; } = true; 
+        [ForeignKey("IdEquipo")]
+        public virtual Equipo? Equipo { get; set; }
+
+        // Clave Foránea 2
+        public int IdJugador { get; set; }
+
+        [ForeignKey("IdJugador")]
+        public virtual Usuario? Jugador { get; set; }
+
+        [Required]
+        [Column(TypeName = "date")]
+        public DateTime FechaUnion { get; set; } = DateTime.UtcNow.Date;
+
+        [Required]
+        public bool EsActivo { get; set; } = true;
     }
 }

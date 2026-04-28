@@ -16,28 +16,49 @@ namespace Fulbacho.Shared.Entities
         public int Id { get; set; }
 
         [Required]
-        [MaxLength(100)]
-        public string Nombre { get; set; } = string.Empty;
-
-        [Required]
-        [MaxLength(100)]
-        public string Apellido { get; set; } = string.Empty;
+        [MaxLength(50)]
+        public string Username { get; set; } = string.Empty;
 
         [Required]
         [EmailAddress]
-        [MaxLength(150)]
+        [MaxLength(100)]
         public string Email { get; set; } = string.Empty;
 
         [Required]
         public string PasswordHash { get; set; } = string.Empty;
 
+        [Required]
+        public DateTime RegisterDate { get; set; } = DateTime.UtcNow;
+
+        [Required]
+        public bool EsActivo { get; set; } = true;
+
         [MaxLength(20)]
-        public string? Telefono { get; set; }
+        public string Telefono { get; set; } = string.Empty;
 
-        public DateTime FechaRegistro { get; set; } = DateTime.UtcNow;
+        [Required]
+        [MaxLength(20)]
+        public string Estado { get; set; } = "Activo"; 
 
-        public bool EsActivo { get; set; } = true; 
+        // Clave Foránea hacia Rol
+        [Required]
+        public int RolId { get; set; }
 
-        public ICollection<UsuarioRol> UsuarioRoles { get; set; } = new List<UsuarioRol>();
+        [ForeignKey("RolId")]
+        public virtual Rol? Rol { get; set; }
+
+        // --- Propiedades de Navegación (Relaciones de Negocio) ---
+
+        // Equipos donde este usuario ejerce el liderazgo como capitán
+        public virtual ICollection<Equipo> EquiposCapitaneados { get; set; } = new List<Equipo>();
+
+        // Relación con la tabla intermedia que gestiona la pertenencia a múltiples equipos
+        public virtual ICollection<JugadorEquipo> JugadorEquipos { get; set; } = new List<JugadorEquipo>();
+
+        // Predios que pertenecen o son gestionados por este usuario (Rol: Administrador/Dueño)
+        public virtual ICollection<Predio> PrediosAdministrados { get; set; } = new List<Predio>();
+
+        // Historial de reservas generadas por este usuario
+        public virtual ICollection<Reserva> ReservasCreadas { get; set; } = new List<Reserva>();
     }
 }

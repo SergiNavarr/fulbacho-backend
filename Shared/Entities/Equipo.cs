@@ -19,22 +19,32 @@ namespace Fulbacho.Shared.Entities
         [MaxLength(100)]
         public string Nombre { get; set; } = string.Empty;
 
-        [MaxLength(500)]
-        public string? EscudoUrl { get; set; }
+        [MaxLength(255)]
+        public string EscudoUrl { get; set; } = string.Empty;
 
+        [Required]
         public bool EsActivo { get; set; } = true;
 
-        // Foreign Keys
         [Required]
         public int IdCapitan { get; set; }
-        [ForeignKey(nameof(IdCapitan))]
-        public Usuario Capitan { get; set; } = null!;
+
+        [ForeignKey("IdCapitan")]
+        public virtual Usuario? Capitan { get; set; }
 
         [Required]
         public int IdNivel { get; set; }
-        [ForeignKey(nameof(IdNivel))]
-        public NivelCompetitivo Nivel { get; set; } = null!;
 
-        public ICollection<JugadorEquipo> Plantilla { get; set; } = new List<JugadorEquipo>();
+        [ForeignKey("IdNivel")]
+        public virtual NivelCompetitivo? NivelCompetitivo { get; set; }
+
+        // --- Propiedades de Navegación ---
+        public virtual ICollection<JugadorEquipo> Jugadores { get; set; } = new List<JugadorEquipo>();
+
+        // Separamos los desafíos donde juega de local o de visitante
+        [InverseProperty("EquipoLocal")]
+        public virtual ICollection<Desafio> DesafiosLocal { get; set; } = new List<Desafio>();
+
+        [InverseProperty("EquipoVisitante")]
+        public virtual ICollection<Desafio> DesafiosVisitante { get; set; } = new List<Desafio>();
     }
 }

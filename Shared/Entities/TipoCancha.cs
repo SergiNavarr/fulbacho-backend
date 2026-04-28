@@ -9,16 +9,19 @@ using System.ComponentModel.DataAnnotations.Schema;
 
 namespace Fulbacho.Shared.Entities
 {
-    [Table("Roles")]
-    public class Rol
+    [Table("TiposCancha")]
+    public class TipoCancha
     {
         [Key]
         public int Id { get; set; }
 
         [Required]
         [MaxLength(50)]
-        public string Nombre { get; set; } = string.Empty;
+        public string Nombre { get; set; } = string.Empty; 
 
-        public virtual ICollection<Usuario> Usuarios { get; set; } = new List<Usuario>();
+        [Required]
+        public int CantidadJugadores { get; set; }
+
+        public ICollection<Cancha> Canchas { get; set; } = new List<Cancha>();
     }
 }

@@ -9,7 +9,7 @@ using System.ComponentModel.DataAnnotations.Schema;
 
 namespace Fulbacho.Shared.Entities
 {
-    [Table("Niveles_Competitivos")]
+    [Table("Niveles_competitivos")]
     public class NivelCompetitivo
     {
         [Key]
@@ -18,5 +18,8 @@ namespace Fulbacho.Shared.Entities
         [Required]
         [MaxLength(50)]
         public string Descripcion { get; set; } = string.Empty;
+
+        // Propiedad de navegación
+        public virtual ICollection<Equipo> Equipos { get; set; } = new List<Equipo>();
     }
 }

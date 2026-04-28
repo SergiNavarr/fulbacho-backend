@@ -43,12 +43,12 @@ namespace Fulbacho.Application.Modules.B2C.Services
 
             return true;
         }
+
         public async Task<Equipo?> ObtenerEquipoPorIdAsync(int idEquipo, int idCapitan)
         {
-            // Usamos Include para traer también los datos del nivel
             return await _context.Equipos
-                .Include(e => e.Nivel)
-                .FirstOrDefaultAsync(e => e.Id == idEquipo && e.IdCapitan == idCapitan && e.EsActivo);
+                .Include(e => e.NivelCompetitivo)
+                .FirstOrDefaultAsync(e => e.Id == idEquipo && e.IdCapitan == idCapitan && e.EsActivo)!;
         }
 
         public async Task<bool> ActualizarEquipoAsync(int idEquipo, ActualizarEquipoDto dto, int idCapitan)
@@ -77,9 +77,8 @@ namespace Fulbacho.Application.Modules.B2C.Services
 
         public async Task<IEnumerable<Equipo>> ObtenerEquiposPorCapitanAsync(int idCapitan)
         {
-            // Buscamos todos los equipos activos de este capitán e incluimos el Nivel para poder leer el texto
             return await _context.Equipos
-                .Include(e => e.Nivel)
+                .Include(e => e.NivelCompetitivo)
                 .Where(e => e.IdCapitan == idCapitan && e.EsActivo)
                 .ToListAsync();
         }

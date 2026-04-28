@@ -3,6 +3,7 @@ using System;
 using Fulbacho.Shared;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 
@@ -11,9 +12,11 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace Shared.Migrations
 {
     [DbContext(typeof(FulbachoDbContext))]
-    partial class FulbachoDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260428032326_ModeladoCompletoFulbacho")]
+    partial class ModeladoCompletoFulbacho
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder

@@ -9,16 +9,17 @@ using System.ComponentModel.DataAnnotations.Schema;
 
 namespace Fulbacho.Shared.Entities
 {
-    [Table("Roles")]
-    public class Rol
+    [Table("Estados_reserva")]
+    public class EstadoReserva
     {
         [Key]
         public int Id { get; set; }
 
         [Required]
         [MaxLength(50)]
-        public string Nombre { get; set; } = string.Empty;
+        public string Descripcion { get; set; } = string.Empty;
 
-        public virtual ICollection<Usuario> Usuarios { get; set; } = new List<Usuario>();
+        // Propiedad de navegación
+        public virtual ICollection<Reserva> Reservas { get; set; } = new List<Reserva>();
     }
 }

@@ -21,8 +21,6 @@ namespace Fulbacho.API.Controllers
         {
             try
             {
-                // TODO: Más adelante sacaremos el idCapitan del Token JWT.
-                // Por ahora, simulamos (mockeamos) que el Capitán logueado es el Usuario con ID 1.
                 int idCapitanMock = 1;
 
                 await _equipoService.CrearEquipoAsync(dto, idCapitanMock);
@@ -40,7 +38,7 @@ namespace Fulbacho.API.Controllers
         {
             try
             {
-                int idCapitanMock = 1; // Mismo mock temporal
+                int idCapitanMock = 1;
                 var equipo = await _equipoService.ObtenerEquipoPorIdAsync(id, idCapitanMock);
 
                 if (equipo == null) return NotFound(new { error = "Equipo no encontrado" });
@@ -51,7 +49,7 @@ namespace Fulbacho.API.Controllers
                     nombre = equipo.Nombre,
                     escudoUrl = equipo.EscudoUrl,
                     idNivel = equipo.IdNivel,
-                    nivel = equipo.Nivel.Descripcion
+                    nivel = equipo.NivelCompetitivo?.Descripcion
                 });
             }
             catch (Exception ex)
@@ -80,14 +78,14 @@ namespace Fulbacho.API.Controllers
         {
             try
             {
-                int idCapitanMock = 1; // Seguimos usando el mock del usuario 1 por ahora
+                int idCapitanMock = 1;
                 var equipos = await _equipoService.ObtenerEquiposPorCapitanAsync(idCapitanMock);
 
                 var resultado = equipos.Select(e => new {
                     id = e.Id,
                     nombre = e.Nombre,
                     escudoUrl = e.EscudoUrl,
-                    nivel = e.Nivel.Descripcion
+                    nivel = e.NivelCompetitivo?.Descripcion
                 });
 
                 return Ok(resultado);

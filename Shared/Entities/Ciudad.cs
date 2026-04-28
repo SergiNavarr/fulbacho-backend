@@ -9,8 +9,8 @@ using System.ComponentModel.DataAnnotations.Schema;
 
 namespace Fulbacho.Shared.Entities
 {
-    [Table("Zonas")]
-    public class Zona
+    [Table("Ciudades")]
+    public class Ciudad
     {
         [Key]
         public int Id { get; set; }
@@ -19,13 +19,6 @@ namespace Fulbacho.Shared.Entities
         [MaxLength(100)]
         public string Nombre { get; set; } = string.Empty;
 
-        [Required]
-        public int CiudadId { get; set; }
-
-        [ForeignKey("CiudadId")]
-        public virtual Ciudad? Ciudad { get; set; }
-
-        public virtual ICollection<Predio> Predios { get; set; } = new List<Predio>();
-        public virtual ICollection<Desafio> Desafios { get; set; } = new List<Desafio>();
+        public ICollection<Zona>? Zonas { get; set; }
     }
 }
