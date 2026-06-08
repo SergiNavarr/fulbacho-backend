@@ -1,10 +1,13 @@
 ﻿using Fulbacho.Application.Modules.B2C.DTOs;
 using Fulbacho.Application.Modules.B2C.Services;
 using Fulbacho.Application.Modules.B2C.Interfaces;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using System.Security.Claims;
 
 namespace Fulbacho.API.Controllers
 {
+    [Authorize]
     [ApiController]
     [Route("api/b2c/[controller]")]
     public class EquiposController : ControllerBase
@@ -21,9 +24,9 @@ namespace Fulbacho.API.Controllers
         {
             try
             {
-                int idCapitanMock = 1;
+                int idCapitan = ObtenerIdUsuario();
 
-                await _equipoService.CrearEquipoAsync(dto, idCapitanMock);
+                await _equipoService.CrearEquipoAsync(dto, idCapitan);
 
                 return Ok(new { mensaje = "¡Equipo creado con éxito!" });
             }
@@ -38,8 +41,8 @@ namespace Fulbacho.API.Controllers
         {
             try
             {
-                int idCapitanMock = 1;
-                var equipo = await _equipoService.ObtenerEquipoPorIdAsync(id, idCapitanMock);
+                int idCapitan = ObtenerIdUsuario();
+                var equipo = await _equipoService.ObtenerEquipoPorIdAsync(id, idCapitan);
 
                 if (equipo == null) return NotFound(new { error = "Equipo no encontrado" });
 
@@ -63,8 +66,8 @@ namespace Fulbacho.API.Controllers
         {
             try
             {
-                int idCapitanMock = 1;
-                await _equipoService.ActualizarEquipoAsync(id, dto, idCapitanMock);
+                int idCapitan = ObtenerIdUsuario();
+                await _equipoService.ActualizarEquipoAsync(id, dto, idCapitan);
                 return Ok(new { mensaje = "¡Equipo actualizado correctamente!" });
             }
             catch (Exception ex)
@@ -78,8 +81,8 @@ namespace Fulbacho.API.Controllers
         {
             try
             {
-                int idCapitanMock = 1;
-                var equipos = await _equipoService.ObtenerEquiposPorCapitanAsync(idCapitanMock);
+                int idCapitan = ObtenerIdUsuario();
+                var equipos = await _equipoService.ObtenerEquiposPorCapitanAsync(idCapitan);
 
                 var resultado = equipos.Select(e => new {
                     id = e.Id,
@@ -94,6 +97,13 @@ namespace Fulbacho.API.Controllers
             {
                 return BadRequest(new { error = ex.Message });
             }
+        }
+        private int ObtenerIdUsuario()
+        {
+            var valor = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            if (!int.TryParse(valor, out int id))
+                throw new UnauthorizedAccessException("Token inválido o sin claim de identidad.");
+            return id;
         }
     }
 }

@@ -10,6 +10,7 @@ namespace Fulbacho.Application.Modules.B2C.Interfaces
         Task<int> CrearDesafioAsync(CrearDesafioDto dto, int idEquipoLocal);
         Task AceptarDesafioAsync(int idDesafio);
         Task RechazarDesafioAsync(int idDesafio);
+        Task<IEnumerable<Equipo>> BuscarRivalesAsync(int idEquipoBuscador);
         void Suscribir(IObservadorDesafio observador);
         void Desuscribir(IObservadorDesafio observador);
     }

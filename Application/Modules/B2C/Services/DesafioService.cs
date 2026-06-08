@@ -1,6 +1,7 @@
 using Fulbacho.Application.Modules.B2C.DTOs;
 using Fulbacho.Application.Modules.B2C.Interfaces;
 using Fulbacho.Application.Modules.B2C.Patterns.Observer;
+using Fulbacho.Application.Modules.B2C.Patterns.Strategy;
 using Fulbacho.Shared;
 using Fulbacho.Shared.Entities;
 using Microsoft.EntityFrameworkCore;
@@ -10,11 +11,13 @@ namespace Fulbacho.Application.Modules.B2C.Services
     public class DesafioService : IDesafioService
     {
         private readonly FulbachoDbContext _context;
+        private readonly MotorMatchmaking _motor;
         private readonly List<IObservadorDesafio> _observadores = new();
 
-        public DesafioService(FulbachoDbContext context)
+        public DesafioService(FulbachoDbContext context, MotorMatchmaking motor)
         {
             _context = context;
+            _motor = motor;
         }
 
         public void Suscribir(IObservadorDesafio observador)   => _observadores.Add(observador);
@@ -94,6 +97,25 @@ namespace Fulbacho.Application.Modules.B2C.Services
             bool existe = await _context.Zonas.AnyAsync(z => z.Id == idZona);
             if (!existe)
                 throw new Exception("La zona seleccionada no existe.");
+        }
+
+        public async Task<IEnumerable<Equipo>> BuscarRivalesAsync(int idEquipoBuscador)
+        {
+            var equipoBuscador = await _context.Equipos
+                .Include(e => e.NivelCompetitivo)
+                .Include(e => e.DesafiosLocal)
+                .Include(e => e.DesafiosVisitante)
+                .FirstOrDefaultAsync(e => e.Id == idEquipoBuscador && e.EsActivo)
+                ?? throw new Exception("Equipo no encontrado o inactivo.");
+
+            var candidatos = await _context.Equipos
+                .Include(e => e.NivelCompetitivo)
+                .Include(e => e.DesafiosLocal)
+                .Include(e => e.DesafiosVisitante)
+                .Where(e => e.EsActivo)
+                .ToListAsync();
+
+            return await _motor.BuscarRivalesAsync(equipoBuscador, candidatos);
         }
 
         private async Task NotificarAsync(Desafio desafio, string evento)

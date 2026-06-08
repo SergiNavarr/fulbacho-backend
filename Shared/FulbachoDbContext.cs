@@ -73,6 +73,30 @@ namespace Fulbacho.Shared
             {
                 relationship.DeleteBehavior = DeleteBehavior.Restrict;
             }
+
+            modelBuilder.Entity<Rol>().HasData(
+                new Rol { Id = 1, Nombre = "Jugador" },
+                new Rol { Id = 2, Nombre = "Administrador" }
+            );
+
+            modelBuilder.Entity<NivelCompetitivo>().HasData(
+                new NivelCompetitivo { Id = 1, Descripcion = "Amateur" },
+                new NivelCompetitivo { Id = 2, Descripcion = "Intermedio" },
+                new NivelCompetitivo { Id = 3, Descripcion = "Competitivo" }
+            );
+
+            modelBuilder.Entity<EstadoDesafio>().HasData(
+                new EstadoDesafio { Id = 1, Descripcion = "Pendiente" },
+                new EstadoDesafio { Id = 2, Descripcion = "Aceptado" },
+                new EstadoDesafio { Id = 3, Descripcion = "Rechazado" },
+                new EstadoDesafio { Id = 4, Descripcion = "Confirmado" }
+            );
+
+            modelBuilder.Entity<EstadoReserva>().HasData(
+                new EstadoReserva { Id = 1, Descripcion = "Pendiente" },
+                new EstadoReserva { Id = 2, Descripcion = "Confirmada" },
+                new EstadoReserva { Id = 3, Descripcion = "Cancelada" }
+            );
         }
     }
 }
