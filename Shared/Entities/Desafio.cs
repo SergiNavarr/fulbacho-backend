@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
+using Fulbacho.Shared.Patterns.State;
 
 namespace Fulbacho.Shared.Entities
 {
@@ -58,5 +59,21 @@ namespace Fulbacho.Shared.Entities
 
         // Propiedad de Navegación
         public virtual ICollection<Reserva> Reservas { get; set; } = new List<Reserva>();
+
+        // --- Patrón State ---
+        [NotMapped]
+        private IEstadoDesafio _estadoPatron = new EstadoPendiente();
+
+        public void Aceptar()   => _estadoPatron.Aceptar(this);
+        public void Rechazar()  => _estadoPatron.Rechazar(this);
+        public void Confirmar() => _estadoPatron.Confirmar(this);
+
+        // Lo llaman las clases concretas de estado.
+        // Actualiza tanto el objeto de dominio como el FK que EF persiste.
+        internal void CambiarEstado(IEstadoDesafio nuevoEstado)
+        {
+            _estadoPatron = nuevoEstado;
+            IdEstadoDesafio = nuevoEstado.Id;
+        }
     }
 }

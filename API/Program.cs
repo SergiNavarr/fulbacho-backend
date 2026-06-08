@@ -1,4 +1,7 @@
+using Fulbacho.Application.Hubs;
 using Fulbacho.Application.Modules.B2C.Interfaces;
+using Fulbacho.Application.Modules.B2C.Patterns.Observer;
+using Fulbacho.Application.Modules.B2C.Patterns.Strategy;
 using Fulbacho.Application.Modules.B2C.Services;
 using Fulbacho.Shared;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
@@ -16,6 +19,15 @@ builder.Services.AddDbContext<FulbachoDbContext>(options =>
 builder.Services.AddScoped<IEquipoService, EquipoService>();
 builder.Services.AddScoped<IPredioService, PredioService>();
 builder.Services.AddScoped<IAutenticacionService, AutenticacionService>();
+
+// Patrón Strategy — Matchmaking
+builder.Services.AddScoped<IMatchmakingStrategy, MatchmakingPorNivel>();
+builder.Services.AddScoped<MotorMatchmaking>();
+
+// Patrón Observer — Desafíos
+builder.Services.AddScoped<IDesafioService, DesafioService>();
+builder.Services.AddScoped<SignalRObserver>();
+builder.Services.AddScoped<ReservaObserver>();
 
 // Configuración de Autenticación JWT
 var jwtKey = builder.Configuration["Jwt:Key"]!;
@@ -47,6 +59,7 @@ builder.Services.AddCors(options =>
     });
 });
 
+builder.Services.AddSignalR();
 builder.Services.AddControllers();
 
 // Swagger - Para probar endpoints protegidos, usar Postman con header:
@@ -67,4 +80,5 @@ app.UseCors("PermitirFrontendNext");
 app.UseAuthentication();
 app.UseAuthorization();
 app.MapControllers();
+app.MapHub<FulbachoHub>("/hubs/fulbacho");
 app.Run();
