@@ -1,9 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
 using System.Threading.Tasks;
-
 using Fulbacho.Application.Modules.B2C.DTOs;
 using Fulbacho.Shared;
 using Fulbacho.Shared.Entities;
@@ -23,11 +21,7 @@ namespace Fulbacho.Application.Modules.B2C.Services
 
         public async Task<bool> CrearEquipoAsync(CrearEquipoDto dto, int idCapitan)
         {
-            bool nivelExiste = await _context.NivelesCompetitivos
-                .AnyAsync(n => n.Id == dto.IdNivel);
-
-            if (!nivelExiste)
-                throw new Exception("El nivel competitivo seleccionado no es válido.");
+            await VerificarNivelAsync(dto.IdNivel);
 
             var nuevoEquipo = new Equipo
             {
@@ -53,24 +47,17 @@ namespace Fulbacho.Application.Modules.B2C.Services
 
         public async Task<bool> ActualizarEquipoAsync(int idEquipo, ActualizarEquipoDto dto, int idCapitan)
         {
-            // Buscamos el equipo y verificamos que le pertenezca a este capitán
-            var equipo = await _context.Equipos
-                .FirstOrDefaultAsync(e => e.Id == idEquipo && e.IdCapitan == idCapitan && e.EsActivo);
+            var equipo = await ObtenerEquipoPorIdAsync(idEquipo, idCapitan);
 
             if (equipo == null)
                 throw new Exception("Equipo no encontrado o no tenés permisos para editarlo.");
 
-            // Verificamos que el nuevo nivel exista
-            bool nivelExiste = await _context.NivelesCompetitivos.AnyAsync(n => n.Id == dto.IdNivel);
-            if (!nivelExiste)
-                throw new Exception("El nivel competitivo seleccionado no es válido.");
+            await VerificarNivelAsync(dto.IdNivel);
 
-            // Actualizamos las propiedades
             equipo.Nombre = dto.Nombre;
             equipo.EscudoUrl = dto.EscudoUrl;
             equipo.IdNivel = dto.IdNivel;
 
-            // Guardamos los cambios
             await _context.SaveChangesAsync();
             return true;
         }
@@ -81,6 +68,14 @@ namespace Fulbacho.Application.Modules.B2C.Services
                 .Include(e => e.NivelCompetitivo)
                 .Where(e => e.IdCapitan == idCapitan && e.EsActivo)
                 .ToListAsync();
+        }
+
+
+        private async Task VerificarNivelAsync(int idNivel)
+        {
+            bool nivelExiste = await _context.NivelesCompetitivos.AnyAsync(n => n.Id == idNivel);
+            if (!nivelExiste)
+                throw new Exception("El nivel competitivo seleccionado no es válido.");
         }
     }
 }

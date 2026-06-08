@@ -15,15 +15,15 @@ namespace Fulbacho.API.Controllers
         }
 
         [HttpGet]
-        public async Task<IActionResult> GetPredios([FromQuery] string? zona)
+        public async Task<IActionResult> GetPredios([FromQuery] string? zona, [FromQuery] string? nombre)
         {
-            if (string.IsNullOrWhiteSpace(zona))
+            if (string.IsNullOrWhiteSpace(zona) && string.IsNullOrWhiteSpace(nombre))
             {
-                var todos = await _predioService.GetAllPrediosAsync();
+                var todos = await _predioService.ObtenerTodosLosPrediosAsync();
                 return Ok(todos);
             }
 
-            var filtrados = await _predioService.GetPrediosByZonaAsync(zona.ToString());
+            var filtrados = await _predioService.FiltrarPrediosAsync(nombre, zona);
             return Ok(filtrados);
         }
     }
