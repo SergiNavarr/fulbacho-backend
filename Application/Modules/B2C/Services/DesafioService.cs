@@ -109,6 +109,7 @@ namespace Fulbacho.Application.Modules.B2C.Services
 
             _context.Desafios.Add(desafio);
             await _context.SaveChangesAsync();
+            await NotificarAsync(desafio, "Creado");
             return desafio.Id;
         }
 
