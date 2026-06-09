@@ -39,6 +39,8 @@ namespace Fulbacho.Application.Modules.B2C.Services
             await VerificarEquipoActivoAsync(dto.IdEquipoVisitante, "visitante");
             await VerificarMismoNivelAsync(idEquipoLocal, dto.IdEquipoVisitante);
             await VerificarZonaExisteAsync(dto.IdZona);
+            await VerificarCanchaExisteAsync(dto.IdCanchaSugerida);
+            await VerificarCanchaPerteneceAZonaAsync(dto.IdCanchaSugerida, dto.IdZona);
 
             var desafio = new Desafio
             {
@@ -97,6 +99,23 @@ namespace Fulbacho.Application.Modules.B2C.Services
             bool existe = await _context.Zonas.AnyAsync(z => z.Id == idZona);
             if (!existe)
                 throw new Exception("La zona seleccionada no existe.");
+        }
+
+        private async Task VerificarCanchaExisteAsync(int idCancha)
+        {
+            bool existe = await _context.Canchas.AnyAsync(c => c.Id == idCancha && c.EsActivo);
+            if (!existe)
+                throw new Exception("La cancha seleccionada no existe o no está activa.");
+        }
+
+        // La cancha pertenece a un Predio, y el Predio pertenece a una Zona (Cancha.IdPredio -> Predio.IdZona).
+        // Por eso podemos chequear que la cancha sugerida esté dentro de la zona del desafío.
+        private async Task VerificarCanchaPerteneceAZonaAsync(int idCancha, int idZona)
+        {
+            bool perteneceAZona = await _context.Canchas
+                .AnyAsync(c => c.Id == idCancha && c.Predio!.IdZona == idZona);
+            if (!perteneceAZona)
+                throw new Exception("La cancha seleccionada no pertenece a la zona del desafío.");
         }
 
         public async Task<IEnumerable<Equipo>> BuscarRivalesAsync(int idEquipoBuscador)

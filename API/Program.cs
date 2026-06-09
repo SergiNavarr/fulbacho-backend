@@ -18,6 +18,7 @@ builder.Services.AddDbContext<FulbachoDbContext>(options =>
 // Registro de Servicios B2C
 builder.Services.AddScoped<IEquipoService, EquipoService>();
 builder.Services.AddScoped<IPredioService, PredioService>();
+builder.Services.AddScoped<IReservaService, ReservaService>();
 builder.Services.AddScoped<IAutenticacionService, AutenticacionService>();
 
 // Patrón Strategy — Matchmaking
@@ -46,6 +47,23 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
             ValidIssuer = jwtIssuer,
             ValidAudience = jwtAudience,
             IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwtKey))
+        };
+
+        options.Events = new JwtBearerEvents
+        {
+            OnMessageReceived = context =>
+            {
+                var accessToken = context.Request.Query["access_token"];
+                var path = context.HttpContext.Request.Path;
+
+                if (!string.IsNullOrEmpty(accessToken) &&
+                    path.StartsWithSegments("/hubs/fulbacho"))
+                {
+                    context.Token = accessToken;
+                }
+
+                return Task.CompletedTask;
+            }
         };
     });
 

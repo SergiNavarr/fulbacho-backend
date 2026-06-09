@@ -10,5 +10,6 @@ namespace Fulbacho.Application.Modules.B2C.Interfaces
     {
         Task<IEnumerable<PredioResponseDto>> ObtenerTodosLosPrediosAsync();
         Task<IEnumerable<PredioResponseDto>> FiltrarPrediosAsync(string? nombre, string? zona);
+        Task<PredioResponseDto?> ObtenerPredioPorIdAsync(int id);
     }
 }

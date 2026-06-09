@@ -7,6 +7,6 @@ namespace Fulbacho.Application.Modules.B2C.DTOs
         public TimeSpan HoraInicio { get; set; }
         public TimeSpan HoraFin { get; set; }
         public int IdZona { get; set; }
-        public int? IdCanchaSugerida { get; set; }
+        public int IdCanchaSugerida { get; set; }
     }
 }

@@ -26,5 +26,13 @@ namespace Fulbacho.API.Controllers
             var filtrados = await _predioService.FiltrarPrediosAsync(nombre, zona);
             return Ok(filtrados);
         }
+
+        [HttpGet("{id}")]
+        public async Task<IActionResult> GetPredio(int id)
+        {
+            var predio = await _predioService.ObtenerPredioPorIdAsync(id);
+            if (predio == null) return NotFound();
+            return Ok(predio);
+        }
     }
 }

@@ -51,8 +51,9 @@ namespace Fulbacho.Shared.Entities
         [ForeignKey("IdZona")]
         public virtual Zona? Zona { get; set; }
 
-        // La cancha es opcional (nullable) porque pueden proponer el partido y decidir la cancha después
-        public int? IdCanchaSugerida { get; set; }
+        // La cancha es obligatoria: no se puede desafiar sin completar lugar y fecha/hora (HU 2.2).
+        [Required]
+        public int IdCanchaSugerida { get; set; }
 
         [ForeignKey("IdCanchaSugerida")]
         public virtual Cancha? CanchaSugerida { get; set; }
