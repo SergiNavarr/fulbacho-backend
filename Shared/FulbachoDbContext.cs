@@ -97,6 +97,19 @@ namespace Fulbacho.Shared
                 new EstadoReserva { Id = 2, Descripcion = "Confirmada" },
                 new EstadoReserva { Id = 3, Descripcion = "Cancelada" }
             );
+
+            modelBuilder.Entity<Superficie>().HasData(
+                new Superficie { Id = 1, Descripcion = "Césped Natural" },
+                new Superficie { Id = 2, Descripcion = "Césped Sintético" },
+                new Superficie { Id = 3, Descripcion = "Parquet" },
+                new Superficie { Id = 4, Descripcion = "Cemento" }
+            );
+
+            modelBuilder.Entity<TipoCancha>().HasData(
+                new TipoCancha { Id = 1, Nombre = "Fútbol 5", CantidadJugadores = 5 },
+                new TipoCancha { Id = 2, Nombre = "Fútbol 7", CantidadJugadores = 7 },
+                new TipoCancha { Id = 3, Nombre = "Fútbol 11", CantidadJugadores = 11 }
+            );
         }
     }
 }
