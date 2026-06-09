@@ -40,6 +40,23 @@ namespace Fulbacho.API.Controllers
             }
         }
 
+        // GET /api/b2c/Desafios?idEquipo=5
+        // Bandeja del equipo (HU 2.3): el front segmenta por el campo "rol"
+        // (Enviado = el equipo es local, Recibido = el equipo es visitante).
+        [HttpGet]
+        public async Task<IActionResult> ObtenerPorEquipo([FromQuery] int idEquipo)
+        {
+            try
+            {
+                var desafios = await _svc.ObtenerDesafiosPorEquipoAsync(idEquipo);
+                return Ok(desafios);
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(new { error = ex.Message });
+            }
+        }
+
         [HttpGet("{id}")]
         public async Task<IActionResult> ObtenerPorId(int id)
         {

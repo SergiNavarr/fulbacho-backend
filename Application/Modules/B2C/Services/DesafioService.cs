@@ -39,6 +39,52 @@ namespace Fulbacho.Application.Modules.B2C.Services
                 .FirstOrDefaultAsync(d => d.Id == idDesafio);
         }
 
+        // Bandeja de desafíos del equipo (HU 2.3). Trae los desafíos donde el equipo
+        // participa como local (enviados) o como visitante (recibidos), ordenados por
+        // fecha descendente. Se mapea a DTO para no exponer la entidad cruda.
+        public async Task<List<DesafioResponseDto>> ObtenerDesafiosPorEquipoAsync(int idEquipo)
+        {
+            var desafios = await _context.Desafios
+                .Include(d => d.EquipoLocal).ThenInclude(e => e!.NivelCompetitivo)
+                .Include(d => d.EquipoVisitante).ThenInclude(e => e!.NivelCompetitivo)
+                .Include(d => d.Estado)
+                .Include(d => d.Zona)
+                .Include(d => d.CanchaSugerida)
+                .Where(d => d.IdEquipoLocal == idEquipo || d.IdEquipoVisitante == idEquipo)
+                .OrderByDescending(d => d.FechaPropuesta)
+                .ThenByDescending(d => d.HoraInicio)
+                .ToListAsync();
+
+            return desafios.Select(d => MapearADto(d, idEquipo)).ToList();
+        }
+
+        // Aplana un Desafio a DTO desde la perspectiva del equipo consultado:
+        // calcula el rol (Enviado/Recibido) y los datos del rival (el otro equipo).
+        private static DesafioResponseDto MapearADto(Desafio d, int idEquipo)
+        {
+            bool esLocal = d.IdEquipoLocal == idEquipo;
+            var rival = esLocal ? d.EquipoVisitante : d.EquipoLocal;
+
+            return new DesafioResponseDto
+            {
+                Id = d.Id,
+                IdEquipoLocal = d.IdEquipoLocal,
+                IdEquipoVisitante = d.IdEquipoVisitante,
+                Rol = esLocal ? "Enviado" : "Recibido",
+                RivalNombre = rival?.Nombre ?? string.Empty,
+                RivalEscudoUrl = rival?.EscudoUrl ?? string.Empty,
+                RivalNivel = rival?.NivelCompetitivo?.Descripcion ?? string.Empty,
+                Estado = d.Estado?.Descripcion ?? string.Empty,
+                // FechaPropuesta es columna 'date'; se etiqueta como UTC para que el JSON
+                // salga con sufijo 'Z' (contrato: el back habla UTC). Las horas van tal cual.
+                FechaPropuesta = DateTime.SpecifyKind(d.FechaPropuesta, DateTimeKind.Utc),
+                HoraInicio = d.HoraInicio,
+                HoraFin = d.HoraFin,
+                Zona = d.Zona?.Nombre ?? string.Empty,
+                Cancha = d.CanchaSugerida?.Nombre ?? string.Empty
+            };
+        }
+
         public async Task<int> CrearDesafioAsync(CrearDesafioDto dto, int idCapitan)
         {
             await VerificarEquipoPerteneceACapitanAsync(dto.IdEquipoLocal, idCapitan);

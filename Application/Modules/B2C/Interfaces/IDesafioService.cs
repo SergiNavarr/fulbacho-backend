@@ -7,6 +7,7 @@ namespace Fulbacho.Application.Modules.B2C.Interfaces
     public interface IDesafioService
     {
         Task<Desafio?> ObtenerPorIdAsync(int idDesafio);
+        Task<List<DesafioResponseDto>> ObtenerDesafiosPorEquipoAsync(int idEquipo);
         Task<int> CrearDesafioAsync(CrearDesafioDto dto, int idCapitan);
         Task AceptarDesafioAsync(int idDesafio);
         Task RechazarDesafioAsync(int idDesafio);
