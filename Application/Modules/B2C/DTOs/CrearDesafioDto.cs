@@ -2,6 +2,7 @@ namespace Fulbacho.Application.Modules.B2C.DTOs
 {
     public class CrearDesafioDto
     {
+        public int IdEquipoLocal { get; set; }
         public int IdEquipoVisitante { get; set; }
         public DateTime FechaPropuesta { get; set; }
         public TimeSpan HoraInicio { get; set; }

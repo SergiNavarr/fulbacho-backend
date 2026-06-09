@@ -14,6 +14,12 @@ namespace Fulbacho.Application.Modules.B2C.Services
         private readonly MotorMatchmaking _motor;
         private readonly List<IObservadorDesafio> _observadores = new();
 
+        // Id de estados según el seed de FulbachoDbContext (HasData). Comparamos por Id
+        // y no por descripción para que un cambio de texto/acento no rompa la validación en silencio.
+        private const int EstadoDesafioPendiente = 1;
+        private const int EstadoDesafioAceptado = 2;
+        private const int EstadoReservaCancelada = 3;
+
         public DesafioService(FulbachoDbContext context, MotorMatchmaking motor)
         {
             _context = context;
@@ -33,18 +39,19 @@ namespace Fulbacho.Application.Modules.B2C.Services
                 .FirstOrDefaultAsync(d => d.Id == idDesafio);
         }
 
-        public async Task<int> CrearDesafioAsync(CrearDesafioDto dto, int idEquipoLocal)
+        public async Task<int> CrearDesafioAsync(CrearDesafioDto dto, int idCapitan)
         {
-            await VerificarEquipoActivoAsync(idEquipoLocal, "local");
+            await VerificarEquipoPerteneceACapitanAsync(dto.IdEquipoLocal, idCapitan);
             await VerificarEquipoActivoAsync(dto.IdEquipoVisitante, "visitante");
-            await VerificarMismoNivelAsync(idEquipoLocal, dto.IdEquipoVisitante);
+            await VerificarMismoNivelAsync(dto.IdEquipoLocal, dto.IdEquipoVisitante);
             await VerificarZonaExisteAsync(dto.IdZona);
             await VerificarCanchaExisteAsync(dto.IdCanchaSugerida);
             await VerificarCanchaPerteneceAZonaAsync(dto.IdCanchaSugerida, dto.IdZona);
+            await VerificarDisponibilidadCanchaAsync(dto.IdCanchaSugerida, dto.FechaPropuesta, dto.HoraInicio, dto.HoraFin);
 
             var desafio = new Desafio
             {
-                IdEquipoLocal = idEquipoLocal,
+                IdEquipoLocal = dto.IdEquipoLocal,
                 IdEquipoVisitante = dto.IdEquipoVisitante,
                 FechaPropuesta = dto.FechaPropuesta,
                 HoraInicio = dto.HoraInicio,
@@ -84,6 +91,17 @@ namespace Fulbacho.Application.Modules.B2C.Services
                 throw new Exception($"El equipo {rol} no existe o no está activo.");
         }
 
+        // El equipo local debe existir, estar activo y pertenecer al capitán autenticado (del token).
+        // Esto evita que un capitán cree desafíos en nombre de un equipo que no es suyo.
+        private async Task VerificarEquipoPerteneceACapitanAsync(int idEquipoLocal, int idCapitan)
+        {
+            await VerificarEquipoActivoAsync(idEquipoLocal, "local");
+            bool esDelCapitan = await _context.Equipos
+                .AnyAsync(e => e.Id == idEquipoLocal && e.IdCapitan == idCapitan);
+            if (!esDelCapitan)
+                throw new Exception("El equipo seleccionado no te pertenece.");
+        }
+
         private async Task VerificarMismoNivelAsync(int idEquipoLocal, int idEquipoVisitante)
         {
             var niveles = await _context.Equipos
@@ -116,6 +134,37 @@ namespace Fulbacho.Application.Modules.B2C.Services
                 .AnyAsync(c => c.Id == idCancha && c.Predio!.IdZona == idZona);
             if (!perteneceAZona)
                 throw new Exception("La cancha seleccionada no pertenece a la zona del desafío.");
+        }
+
+        // No se puede desafiar en una cancha que ya está ocupada en ese rango horario.
+        // Mismo criterio de solapamiento que ReservaService.VerificarDisponibilidadAsync:
+        // hay solapamiento si  inicioExistente < finNuevo  &&  inicioNuevo < finExistente.
+        private async Task VerificarDisponibilidadCanchaAsync(int idCancha, DateTime fechaPropuesta, TimeSpan horaInicio, TimeSpan horaFin)
+        {
+            // Reserva: trabaja con DateTime, así que reconstruimos el rango propuesto sobre la fecha del desafío.
+            // La fecha/hora viene en hora local AR; las columnas de Reservas son timestamptz, así que
+            // convertimos a UTC antes de consultar (Npgsql rechaza DateTime con Kind=Unspecified).
+            DateTime inicioPropuesto = ZonaHorariaArgentina.ConvertirAUtc(fechaPropuesta.Date + horaInicio);
+            DateTime finPropuesto = ZonaHorariaArgentina.ConvertirAUtc(fechaPropuesta.Date + horaFin);
+
+            // Una reserva bloquea el horario salvo que esté Cancelada.
+            bool ocupadaPorReserva = await _context.Reservas
+                .AnyAsync(r => r.IdCancha == idCancha
+                    && r.IdEstadoReserva != EstadoReservaCancelada
+                    && r.FechaHoraInicio < finPropuesto
+                    && inicioPropuesto < r.FechaHoraFin);
+
+            // Otro desafío bloquea el horario si está Pendiente o Aceptado (no Rechazado).
+            // El estado Confirmado ya genera su Reserva asociada, por lo que queda cubierto por el chequeo anterior.
+            bool ocupadaPorDesafio = await _context.Desafios
+                .AnyAsync(d => d.IdCanchaSugerida == idCancha
+                    && d.FechaPropuesta == fechaPropuesta.Date
+                    && (d.IdEstadoDesafio == EstadoDesafioPendiente || d.IdEstadoDesafio == EstadoDesafioAceptado)
+                    && d.HoraInicio < horaFin
+                    && horaInicio < d.HoraFin);
+
+            if (ocupadaPorReserva || ocupadaPorDesafio)
+                throw new Exception("La cancha ya está ocupada en ese horario.");
         }
 
         public async Task<IEnumerable<Equipo>> BuscarRivalesAsync(int idEquipoBuscador)
