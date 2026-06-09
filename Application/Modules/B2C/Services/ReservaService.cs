@@ -21,18 +21,24 @@ namespace Fulbacho.Application.Modules.B2C.Services
         public async Task<int> CrearReservaAsync(CrearReservaDto dto, int idUsuario)
         {
             var cancha = await VerificarCanchaExisteAsync(dto.IdCancha);
-            VerificarRangoHorarioValido(dto.FechaHoraInicio, dto.FechaHoraFin);
-            await VerificarDisponibilidadAsync(dto.IdCancha, dto.FechaHoraInicio, dto.FechaHoraFin);
+
+            // El DTO trae la hora en local AR; convertimos a UTC una sola vez para que la query de
+            // disponibilidad y el INSERT (columnas timestamptz) compartan exactamente el mismo valor.
+            DateTime inicioUtc = ZonaHorariaArgentina.ConvertirAUtc(dto.FechaHoraInicio);
+            DateTime finUtc = ZonaHorariaArgentina.ConvertirAUtc(dto.FechaHoraFin);
+
+            VerificarRangoHorarioValido(inicioUtc, finUtc);
+            await VerificarDisponibilidadAsync(dto.IdCancha, inicioUtc, finUtc);
             int idEstadoPendiente = await ObtenerEstadoReservaPendienteAsync();
 
-            decimal montoTotal = CalcularMontoTotal(cancha.PrecioPorHora, dto.FechaHoraInicio, dto.FechaHoraFin);
+            decimal montoTotal = CalcularMontoTotal(cancha.PrecioPorHora, inicioUtc, finUtc);
             decimal montoSena = CalcularMontoSena(montoTotal);
 
             var reserva = new Reserva
             {
                 IdCancha = dto.IdCancha,
-                FechaHoraInicio = dto.FechaHoraInicio,
-                FechaHoraFin = dto.FechaHoraFin,
+                FechaHoraInicio = inicioUtc,
+                FechaHoraFin = finUtc,
                 MontoTotal = montoTotal,
                 MontoSena = montoSena,
                 Notas = dto.Notas ?? string.Empty,
