@@ -24,8 +24,20 @@ namespace Fulbacho.API.Controllers
         [HttpPost]
         public async Task<IActionResult> Crear([FromBody] CrearDesafioDto dto)
         {
-            var id = await _svc.CrearDesafioAsync(dto, ObtenerIdUsuario());
-            return CreatedAtAction(nameof(ObtenerPorId), new { id }, new { id });
+            // ObtenerIdUsuario() = id del capitán autenticado. El servicio valida que
+            // dto.IdEquipoLocal realmente le pertenezca antes de crear el desafío.
+            // Capturamos Exception genérica (igual que EquiposController) para devolver las
+            // validaciones de negocio como 400 con el mensaje. IDEAL a futuro: usar un tipo
+            // de excepción propio (ej. ExcepcionDeNegocio) y no mezclar errores de programación.
+            try
+            {
+                var id = await _svc.CrearDesafioAsync(dto, ObtenerIdUsuario());
+                return CreatedAtAction(nameof(ObtenerPorId), new { id }, new { id });
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(new { error = ex.Message });
+            }
         }
 
         [HttpGet("{id}")]
@@ -39,15 +51,29 @@ namespace Fulbacho.API.Controllers
         [HttpPut("{id}/aceptar")]
         public async Task<IActionResult> Aceptar(int id)
         {
-            await _svc.AceptarDesafioAsync(id);
-            return NoContent();
+            try
+            {
+                await _svc.AceptarDesafioAsync(id);
+                return NoContent();
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(new { error = ex.Message });
+            }
         }
 
         [HttpPut("{id}/rechazar")]
         public async Task<IActionResult> Rechazar(int id)
         {
-            await _svc.RechazarDesafioAsync(id);
-            return NoContent();
+            try
+            {
+                await _svc.RechazarDesafioAsync(id);
+                return NoContent();
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(new { error = ex.Message });
+            }
         }
 
         // GET /api/b2c/Desafios/rivales?idEquipo=5
